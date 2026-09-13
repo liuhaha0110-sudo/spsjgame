@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>spsjgame</title>
+
+  <style>
+    :root {
+      --bg: #100d18;
+      --panel: #1c1728;
+      --panel-light: #282039;
+      --primary: #a875ff;
+      --primary-dark: #7045bd;
+      --gold: #e7bb68;
+      --text: #f5f0ff;
+      --muted: #aaa0bd;
+      --danger: #d96882;
+      --success: #71d4a1;
+      --border: rgba(255, 255, 255, 0.1);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(133, 77, 211, 0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(218, 165, 73, 0.1), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family:
+        "Segoe UI",
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 50px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #20142f;
+      background: linear-gradient(135deg, var(--gold), #fff0b0);
+      font-size: 23px;
+      box-shadow: 0 8px 25px rgba(231, 187, 104, 0.2);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .badge {
+      padding: 8px 12px;
+      border: 1px solid rgba(231, 187, 104, 0.25);
+      border-radius: 999px;
+      color: var(--gold);
+      background: rgba(231, 187, 104, 0.06);
+      font-size: 12px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero {
+      margin-bottom: 22px;
+    }
+
+    .hero h2 {
+      margin: 0 0 8px;
+      font-size: clamp(25px, 4vw, 38px);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .panel {
+      background: rgba(28, 23, 40, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .panel + .panel {
+      margin-top: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .section-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: #d8cfe8;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      outline: none;
+      border-radius: 13px;
+      background: #120e1d;
+      color: var(--text);
+      padding: 12px 13px;
+      transition: 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(168, 117, 255, 0.12);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .choice {
+      position: relative;
+    }
+
+    .choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice label {
+      display: block;
+      height: 100%;
+      min-height: 66px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .choice label strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .choice label small {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .choice input:checked + label {
+      border-color: var(--primary);
+      background: rgba(168, 117, 255, 0.15);
+      box-shadow: 0 0 0 2px rgba(168, 117, 255, 0.08);
+    }
+
+    .switch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .switch-row:last-child {
+      border-bottom: 0;
+    }
+
+    .switch-info strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .switch-info span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 27px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #3b334b;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 21px;
+      height: 21px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: #fff;
+      transition: 0.2s;
+    }
+
+    .switch input:checked + .slider {
+      background: var(--primary-dark);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(21px);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 18px;
+      color: var(--text);
+      background: var(--panel-light);
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+    }
+
+    .btn.primary {
+      color: #21152f;
+      background: linear-gradient(135deg, #c59aff, #9060e6);
+      font-weight: 700;
+    }
+
+    .btn.gold {
+      color: #2b2112;
+      background: linear-gradient(135deg, #f2d38b, #c8953f);
+      font-weight: 700;
+    }
+
+    .btn.danger {
+      background: rgba(217, 104, 130, 0.15);
+      color: #ffb1c2;
+    }
+
+    .btn.success {
+      background: rgba(113, 212, 161, 0.15);
+      color: #a6f1c9;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .summary-card {
+      padding: 15px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+    }
+
+    .summary-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card strong {
+      font-size: 17px;
+    }
+
+    .wheel-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+      gap: 24px;
+      align-items: center;
+    }
+
+    .wheel-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 430px;
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: min(390px, 85vw);
+      aspect-ratio: 1;
+    }
+
+    .pointer {
+      position: absolute;
+      z-index: 5;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 35px solid var(--gold);
+      filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3));
+    }
+
+    .wheel {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 9px solid #2c203c;
+      box-shadow:
+        0 0 0 2px rgba(231, 187, 104, 0.5),
+        0 18px 50px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      transition: transform 4.5s cubic-bezier(0.12, 0.8, 0.15, 1);
+      background:
+        conic-gradient(
+          #8f62d2 0deg 45deg,
+          #c9944a 45deg 90deg,
+          #604393 90deg 135deg,
+          #b879a3 135deg 180deg,
+          #8060bc 180deg 225deg,
+          #d0a35a 225deg 270deg,
+          #5c4c91 270deg 315deg,
+          #a45d91 315deg 360deg
+        );
+    }
+
+    .wheel::after {
+      content: "";
+      position: absolute;
+      inset: 24%;
+      border-radius: 50%;
+      background: #171121;
+      border: 4px solid rgba(231, 187, 104, 0.7);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .wheel-center {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .wheel-center span {
+      display: grid;
+      place-items: center;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      color: #261a32;
+      background: linear-gradient(135deg, #f4d794, #c28b39);
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 0 0 6px rgba(231, 187, 104, 0.15);
+    }
+
+    .wheel-labels {
+      position: absolute;
+      z-index: 3;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .wheel-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 100px;
+      margin-left: -50px;
+      margin-top: -14px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.65);
+      transform-origin: 50% 14px;
+    }
+
+    .wheel-tip {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .result-panel {
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .result-label {
+      color: var(--gold);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.2;
+      margin: 0 0 15px;
+    }
+
+    .result-description {
+      color: #d5ccdf;
+      line-height: 1.8;
+      margin: 0;
+      white-space: pre-line;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #d9c6ff;
+      background: rgba(168, 117, 255, 0.13);
+      border: 1px solid rgba(168, 117, 255, 0.2);
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 13px;
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid var(--border);
+    }
+
+    .history-item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .history-item span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 25px 0;
+      font-size: 13px;
+    }
+
+    .notice {
+      padding: 13px 15px;
+      border-radius: 13px;
+      color: #e5d9f4;
+      background: rgba(168, 117, 255, 0.08);
+      border: 1px solid rgba(168, 117, 255, 0.18);
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
+      color: #756b86;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 800px) {
+      .form-grid,
+      .wheel-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .wheel-area {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 20px, 1100px);
+        padding-top: 15px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .badge {
+        display: none;
+      }
+
+      .panel {
+        padding: 17px;
+        border-radius: 19px;
+      }
+
+      .choice-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary {
+        gap: 8px;
+      }
+
+      .summary-card {
+        padding: 12px;
+      }
+
+      .summary-card strong {
+        font-size: 14px;
+      }
+
+      .actions .btn {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">✦</div>
+        <div>
+          <h1>spsjgame</h1>
+          <p>Private Spin Game</p>
+        </div>
+      </div>
+
+      <div class="badge">仅供双方自愿使用</div>
+    </header>
+
+    <!-- 设置页面 -->
+    <section id="setupScreen" class="screen active">
+      <div class="hero">
+        <h2>开始一局新的游戏</h2>
+        <p>
+          先设置本轮游戏参数，再进入转盘。所有互动都应建立在双方明确、自愿、
+          随时可以停止的基础上。
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>基础设置</h3>
+          <span>Step 1 / 3</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="gameName">本局名称</label>
+            <input
+              id="gameName"
+              type="text"
+              placeholder="例如：今晚小游戏"
+              maxlength="40"
+            />
+          </div>
+
+          <div class="field">
+            <label for="roundCount">计划进行轮数</label>
+            <input
+              id="roundCount"
+              type="number"
+              min="1"
+              max="99"
+              value="5"
+            />
+          </div>
+
+          <div class="field full">
+            <label for="customNote">本局备注</label>
+            <textarea
+              id="customNote"
+              placeholder="可以填写气氛、规则、注意事项等"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>抽取类别</h3>
+          <span>Step 2 / 3</span>
+        </div>
+
+        <div class="choice-grid">
+          <div class="choice">
+            <input
+              type="radio"
+              id="categoryAction"
+              name="category"
+              value="action"
+              checked
+            />
+            <label for="categoryAction">
+              <strong>互动动作</strong>
+              <small>从预设动作池中抽取一项</small>
+            </label>
+          </div>
+
+          <div class="choice">
+            <input
+              type="radio"
+              id="categoryScene"
+              name="category"
+              value="scene"
+            />
+            <label for="categoryScene">
+              <strong>场景氛围</strong>
+              <small>抽取本轮的场景或气氛方向</small>
+            </label>
+          </div>
+
+          <div class="choice">
+            <input
+              type="radio"
+              id="categoryMix"
+              name="category"
+              value="mix"
+            />
+            <label for="categoryMix">
+              <strong>混合模式</strong>
+              <small>动作与场景混合抽取</small>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>互动内容</h3>
+          <span>Step 3 / 3</span>
+        </div>
+
+        <div class="field">
+          <label for="customItems">
+            自定义抽签内容
+          </label>
+
+          <textarea
+            id="customItems"
+            placeholder="每行一项，例如：
+轻柔互动
+短暂暂停
+交换主导权
+选择音乐
+自由发挥"
+          ></textarea>
+
+          <div class="hint">
+            如果留空，将使用内置示例内容。建议内容保持清晰、可拒绝、可随时停止。
+          </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>允许重抽</strong>
+              <span>抽到不合适的内容时，可以重新抽取。</span>
+            </div>
+
+            <label class="switch">
+              <input id="allowReroll" type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>允许跳过</strong>
+              <span>任何一方都可以跳过当前结果。</span>
+            </div>
+
+            <label class="switch">
+              <input id="allowSkip" type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-info">
+              <strong>启用特殊彩蛋</strong>
+              <span>小概率触发额外结果，例如幸运重抽或双重抽取。</span>
+            </div>
+
+            <label class="switch">
+              <input id="enableBonus" type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="startGameBtn" class="btn primary">
+            开始游戏
+          </button>
+
+          <button id="clearHistoryBtn" class="btn danger">
+            清除历史记录
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>历史记录</h3>
+          <span>仅保存在当前浏览器</span>
+        </div>
+
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- 转盘页面 -->
+    <section id="wheelScreen" class="screen">
+      <div class="hero">
+        <h2>准备抽取</h2>
+        <p>
+          双方确认后再点击开始。抽取结果只是建议，不代表必须执行。
+        </p>
+      </div>
+
+      <div class="panel">
+        <div class="summary">
+          <div class="summary-card">
+            <span>本局名称</span>
+            <strong id="summaryGameName">-</strong>
+          </div>
+
+          <div class="summary-card">
+            <span>当前轮数</span>
+            <strong id="summaryRound">1 / 5</strong>
+          </div>
+
+          <div class="summary-card">
+            <span>抽取模式</span>
+            <strong id="summaryCategory">-</strong>
+          </div>
+
+          <div class="summary-card">
+            <span>状态</span>
+            <strong id="summaryStatus">等待抽取</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="wheel-layout">
+          <div class="wheel-area">
+            <div class="wheel-wrap">
+              <div class="pointer"></div>
+              <div id="wheel" class="wheel">
+                <div id="wheelLabels" class="wheel-labels"></div>
+                <div class="wheel-center">
+                  <span>SPIN</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="wheel-tip">
+              点击下方按钮开始转盘
+            </div>
+
+            <div class="actions">
+              <button id="spinBtn" class="btn gold">
+                开始抽取
+              </button>
+
+              <button id="backToSetupBtn" class="btn">
+                返回设置
+              </button>
+            </div>
+          </div>
+
+          <div class="panel result-panel">
+            <div class="result-label">CURRENT RESULT</div>
+            <h3 id="resultTitle" class="result-title">
+              尚未抽取
+            </h3>
+
+            <p id="resultDescription" class="result-description">
+              点击“开始抽取”，等待转盘停止后查看结果。
+            </p>
+
+            <div id="resultMeta" class="result-meta"></div>
+
+            <div id="resultActions" class="actions hidden">
+              <button id="confirmBtn" class="btn success">
+                确认并进入下一轮
+              </button>
+
+              <button id="rerollBtn" class="btn primary">
+                重抽
+              </button>
+
+              <button id="skipBtn" class="btn">
+                跳过
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="gameNotice" class="panel notice">
+        提醒：任何一方感到不适、犹豫或改变想法时，都可以立即停止本轮游戏。
+      </div>
+    </section>
+
+    <!-- 结束页面 -->
+    <section id="finishScreen" class="screen">
+      <div class="hero">
+        <h2>本局游戏结束</h2>
+        <p>本轮记录已经保存在当前浏览器中。</p>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">
+          <h3>本局总结</h3>
+          <span id="finishGameName">-</span>
+        </div>
+
+        <div class="summary">
+          <div class="summary-card">
+            <span>计划轮数</span>
+            <strong id="finishTotalRounds">-</strong>
+          </div>
+
+          <div class="summary-card">
+            <span>完成轮数</span>
+            <strong id="finishCompletedRounds">-</strong>
+          </div>
+
+          <div class="summary-card">
+            <span>跳过次数</span>
+            <strong id="finishSkippedRounds">-</strong>
+          </div>
+
+          <div class="summary-card">
+            <span>重抽次数</span>
+            <strong id="finishRerollCount">-</strong>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="restartBtn" class="btn primary">
+            再来一局
+          </button>
+
+          <button id="finishHomeBtn" class="btn">
+            返回首页
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      spsjgame · 私人本地网页工具 · 数据默认保存在当前浏览器
+    </footer>
+  </div>
+
+  <script>
+    const defaultItems = [
+      {
+        title: "轻柔互动",
+        description: "选择一种双方都能接受的轻柔互动方式，保持沟通。",
+        type: "互动"
+      },
+      {
+        title: "短暂暂停",
+        description: "暂停片刻，确认双方状态，再决定是否继续。",
+        type: "节奏"
+      },
+      {
+        title: "交换主导权",
+        description: "由另一方决定下一步节奏，任何时候都可以拒绝。",
+        type: "角色"
+      },
+      {
+        title: "选择音乐",
+        description: "选择一首适合当前气氛的音乐，让环境更舒适。",
+        type: "氛围"
+      },
+      {
+        title: "语言互动",
+        description: "用一句明确、尊重、双方都喜欢的话表达当前感受。",
+        type: "沟通"
+      },
+      {
+        title: "自由发挥",
+        description: "双方共同决定一个简单、安全、可随时停止的小环节。",
+        type: "自由"
+      },
+      {
+        title: "确认边界",
+        description: "重新确认本轮的接受范围、停止信号和不做事项。",
+        type: "安全"
+      },
+      {
+        title: "拥抱或靠近",
+        description: "进行一个双方都愿意的亲密互动，并确认舒适程度。",
+        type: "亲密"
+      }
+    ];
+
+    const state = {
+      settings: null,
+      items: [],
+      currentRound: 1,
+      currentResult: null,
+      currentIndex: -1,
+      rotation: 0,
+      isSpinning: false,
+      completedRounds: 0,
+      skippedRounds: 0,
+      rerollCount: 0,
+      sessionHistory: []
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("active");
+      });
+
+      $(id).classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function getSelectedCategory() {
+      return document.querySelector(
+        'input[name="category"]:checked'
+      ).value;
+    }
+
+    function getCategoryText(category) {
+      const map = {
+        action: "互动动作",
+        scene: "场景氛围",
+        mix: "混合模式"
+      };
+
+      return map[category] || "混合模式";
+    }
+
+    function parseCustomItems() {
+      const raw = $("#customItems").value.trim();
+
+      if (!raw) {
+        return defaultItems.map((item) => ({ ...item }));
+      }
+
+      return raw
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const parts = line.split("|");
+
+          return {
+            title: parts[0].trim(),
+            description:
+              parts[1]?.trim() ||
+              "请双方确认接受程度，并在任何不适时立即停止。",
+            type: parts[2]?.trim() || "自定义"
+          };
+        });
+    }
+
+    function saveSettings() {
+      const settings = {
+        gameName: $("#gameName").value.trim() || "未命名游戏",
+        roundCount: Math.max(
+          1,
+          Math.min(99, Number($("#roundCount").value) || 5)
+        ),
+        customNote: $("#customNote").value.trim(),
+        category: getSelectedCategory(),
+        customItems: $("#customItems").value,
+        allowReroll: $("#allowReroll").checked,
+        allowSkip: $("#allowSkip").checked,
+        enableBonus: $("#enableBonus").checked
+      };
+
+      localStorage.setItem("spsjgame_settings", JSON.stringify(settings));
+      return settings;
+    }
+
+    function loadSettings() {
+      const raw = localStorage.getItem("spsjgame_settings");
+
+      if (!raw) {
+        return;
+      }
+
+      try {
+        const settings = JSON.parse(raw);
+
+        $("#gameName").value = settings.gameName || "";
+        $("#roundCount").value = settings.roundCount || 5;
+        $("#customNote").value = settings.customNote || "";
+        $("#customItems").value = settings.customItems || "";
+        $("#allowReroll").checked = settings.allowReroll !== false;
+        $("#allowSkip").checked = settings.allowSkip !== false;
+        $("#enableBonus").checked = settings.enableBonus !== false;
+
+        const categoryRadio = document.querySelector(
+          `input[name="category"][value="${settings.category || "action"}"]`
+        );
+
+        if (categoryRadio) {
+          categoryRadio.checked = true;
+        }
+      } catch (error) {
+        console.warn("无法读取保存的设置", error);
+      }
+    }
+
+    function saveHistory() {
+      localStorage.setItem(
+        "spsjgame_history",
+        JSON.stringify(state.sessionHistory)
+      );
+    }
+
+    function loadHistory() {
+      const raw = localStorage.getItem("spsjgame_history");
+
+      if (!raw) {
+        state.sessionHistory = [];
+        return;
+      }
+
+      try {
+        state.sessionHistory = JSON.parse(raw);
+      } catch (error) {
+        state.sessionHistory = [];
+      }
+    }
+
+    function renderHistory() {
+      const list = $("#historyList");
+      list.innerHTML = "";
+
+      if (!state.sessionHistory.length) {
+        list.innerHTML = `
+          <div class="empty">
+            暂时没有历史记录
+          </div>
+        `;
+        return;
+      }
+
+      state.sessionHistory
+        .slice()
+        .reverse()
+        .slice(0, 20)
+        .forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "history-item";
+
+          div.innerHTML = `
+            <div>
+              <strong>${escapeHtml(item.name)}</strong>
+              <span>
+                完成 ${item.completed} 轮 · 跳过 ${item.skipped} 次 · 重抽 ${item.rerolls} 次
+              </span>
+            </div>
+            <span>${escapeHtml(item.date)}</span>
+          `;
+
+          list.appendChild(div);
+        });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function createWheelLabels() {
+      const labels = $("#wheelLabels");
+      labels.innerHTML = "";
+
+      const count = state.items.length;
+
+      state.items.forEach((item, index) => {
+        const label = document.createElement("div");
+        label.className = "wheel-label";
+        label.textContent = item.title;
+
+        const angle = (360 / count) * index + 360 / count / 2;
+
+        label.style.transform =
+          `rotate(${angle}deg) translateY(-145px) rotate(${-angle}deg)`;
+
+        labels.appendChild(label);
+      });
+    }
+
+    function prepareGame() {
+      state.settings = saveSettings();
+      state.items = parseCustomItems();
+      state.currentRound = 1;
+      state.currentResult = null;
+      state.currentIndex = -1;
+      state.rotation = 0;
+      state.isSpinning = false;
+      state.completedRounds = 0;
+      state.skippedRounds = 0;
+      state.rerollCount = 0;
+      state.sessionHistory = [];
+
+      $("#summaryGameName").textContent = state.settings.gameName;
+      $("#summaryRound").textContent =
+        `${state.currentRound} / ${state.settings.roundCount}`;
+      $("#summaryCategory").textContent =
+        getCategoryText(state.settings.category);
+      $("#summaryStatus").textContent = "等待抽取";
+
+      $("#resultTitle").textContent = "尚未抽取";
+      $("#resultDescription").textContent =
+        "点击“开始抽取”，等待转盘停止后查看结果。";
+      $("#resultMeta").innerHTML = "";
+      $("#resultActions").classList.add("hidden");
+
+      $("#spinBtn").disabled = false;
+      $("#spinBtn").textContent = "开始抽取";
+
+      createWheelLabels();
+      showScreen("#wheelScreen");
+    }
+
+    function chooseRandomIndex() {
+      return Math.floor(Math.random() * state.items.length);
+    }
+
+    function calculateTargetRotation(index) {
+      const segmentAngle = 360 / state.items.length;
+
+      /*
+        指针位于顶部。
+        让目标分区中心转到顶部附近。
+      */
+      const targetAngle =
+        360 - (index * segmentAngle + segmentAngle / 2);
+
+      const extraTurns = 5 + Math.floor(Math.random() * 3);
+
+      return state.rotation + extraTurns * 360 + targetAngle;
+    }
+
+    function spinWheel() {
+      if (state.isSpinning) {
+        return;
+      }
+
+      state.isSpinning = true;
+      $("#spinBtn").disabled = true;
+      $("#resultActions").classList.add("hidden");
+      $("#summaryStatus").textContent = "转盘中";
+
+      const index = chooseRandomIndex();
+      const targetRotation = calculateTargetRotation(index);
+
+      state.currentIndex = index;
+      state.rotation = targetRotation;
+
+      $("#wheel").style.transform =
+        `rotate(${targetRotation}deg)`;
+
+      setTimeout(() => {
+        state.isSpinning = false;
+        state.currentResult = state.items[index];
+
+        $("#summaryStatus").textContent = "等待确认";
+        showResult(state.currentResult);
+
+        $("#spinBtn").disabled = false;
+        $("#resultActions").classList.remove("hidden");
+
+        updateActionButtons();
+      }, 4700);
+    }
+
+    function showResult(item) {
+      $("#resultTitle").textContent = item.title;
+      $("#resultDescription").textContent = item.description;
+
+      $("#resultMeta").innerHTML = `
+        <span class="tag">${escapeHtml(item.type)}</span>
+        <span class="tag">第 ${state.currentRound} 轮</span>
+      `;
+
+      maybeTriggerBonus();
+    }
+
+    function maybeTriggerBonus() {
+      if (!state.settings.enableBonus) {
+        return;
+      }
+
+      const bonusRoll = Math.random();
+
+      if (bonusRoll < 0.08) {
+        $("#resultMeta").insertAdjacentHTML(
+          "beforeend",
+          `<span class="tag">幸运重抽</span>`
+        );
+      } else if (bonusRoll < 0.13) {
+        $("#resultMeta").insertAdjacentHTML(
+          "beforeend",
+          `<span class="tag">特别回合</span>`
+        );
+      }
+    }
+
+    function updateActionButtons() {
+      $("#rerollBtn").classList.toggle(
+        "hidden",
+        !state.settings.allowReroll
+      );
+
+      $("#skipBtn").classList.toggle(
+        "hidden",
+        !state.settings.allowSkip
+      );
+    }
+
+    function recordCurrentResult(status) {
+      if (!state.currentResult) {
+        return;
+      }
+
+      state.sessionHistory.push({
+        round: state.currentRound,
+        title: state.currentResult.title,
+        type: state.currentResult.type,
+        status,
+        date: new Date().toLocaleString()
+      });
+    }
+
+    function goNextRound() {
+      if (state.currentRound >= state.settings.roundCount) {
+        finishGame();
+        return;
+      }
+
+      state.currentRound += 1;
+      state.currentResult = null;
+      state.currentIndex = -1;
+
+      $("#summaryRound").textContent =
+        `${state.currentRound} / ${state.settings.roundCount}`;
+      $("#summaryStatus").textContent = "等待抽取";
+
+      $("#resultTitle").textContent = "尚未抽取";
+      $("#resultDescription").textContent =
+        "点击“开始抽取”，等待转盘停止后查看结果。";
+      $("#resultMeta").innerHTML = "";
+      $("#resultActions").classList.add("hidden");
+    }
+
+    function confirmResult() {
+      if (!state.currentResult || state.isSpinning) {
+        return;
+      }
+
+      recordCurrentResult("确认");
+      state.completedRounds += 1;
+      goNextRound();
+    }
+
+    function skipResult() {
+      if (!state.currentResult || state.isSpinning) {
+        return;
+      }
+
+      recordCurrentResult("跳过");
+      state.skippedRounds += 1;
+      goNextRound();
+    }
+
+    function rerollResult() {
+      if (!state.currentResult || state.isSpinning) {
+        return;
+      }
+
+      state.rerollCount += 1;
+      $("#summaryStatus").textContent = "准备重抽";
+      $("#resultActions").classList.add("hidden");
+
+      setTimeout(() => {
+        spinWheel();
+      }, 150);
+    }
+
+    function finishGame() {
+      const summary = {
+        name: state.settings.gameName,
+        completed: state.completedRounds,
+        skipped: state.skippedRounds,
+        rerolls: state.rerollCount,
+        date: new Date().toLocaleString()
+      };
+
+      const oldHistory = JSON.parse(
+        localStorage.getItem("spsjgame_history") || "[]"
+      );
+
+      oldHistory.push(summary);
+
+      localStorage.setItem(
+        "spsjgame_history",
+        JSON.stringify(oldHistory.slice(-50))
+      );
+
+      $("#finishGameName").textContent = state.settings.gameName;
+      $("#finishTotalRounds").textContent = state.settings.roundCount;
+      $("#finishCompletedRounds").textContent = state.completedRounds;
+      $("#finishSkippedRounds").textContent = state.skippedRounds;
+      $("#finishRerollCount").textContent = state.rerollCount;
+
+      loadHistory();
+      renderHistory();
+      showScreen("#finishScreen");
+    }
+
+    function clearHistory() {
+      const confirmed = window.confirm(
+        "确定要清除所有历史记录吗？此操作无法撤销。"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      localStorage.removeItem("spsjgame_history");
+      state.sessionHistory = [];
+      renderHistory();
+    }
+
+    $("#startGameBtn").addEventListener("click", prepareGame);
+
+    $("#spinBtn").addEventListener("click", spinWheel);
+
+    $("#confirmBtn").addEventListener("click", confirmResult);
+
+    $("#skipBtn").addEventListener("click", skipResult);
+
+    $("#rerollBtn").addEventListener("click", rerollResult);
+
+    $("#backToSetupBtn").addEventListener("click", () => {
+      showScreen("#setupScreen");
+    });
+
+    $("#restartBtn").addEventListener("click", () => {
+      prepareGame();
+    });
+
+    $("#finishHomeBtn").addEventListener("click", () => {
+      showScreen("#setupScreen");
+    });
+
+    $("#clearHistoryBtn").addEventListener("click", clearHistory);
+
+    loadSettings();
+    loadHistory();
+    renderHistory();
+  </script>
+</body>
+</html>
